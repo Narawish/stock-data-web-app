@@ -21,30 +21,45 @@ user_input = st.text_input('Enter Stock Ticker','AAPL')
 start = st.date_input("Starting date")
 end = st.date_input('Ending date')
 
-if end <= dt.date.today():
-    total_days = (end - start).days
+if start > end:
+    st.error('Ending date cannot more than starting date')
+if end <= dt.date.today() and start <= end:
+    total_days = (end - start).days + 1
     st.write('total days = '  , total_days)
     df = pdr.get_data_yahoo(user_input, start ,end)
 
+    #Arrange visualization into tabs
+    tab1, tab2, tab3, tab4, tab5 = st.tabs(['Describe',
+                                        'Closing',
+                                        'MA 100',
+                                        'MA 100 & 200',
+                                        'LSTM'])
+
     #Describing data
-    st.subheader(str(user_input)+ ' Data from '+ str(start)+ ' - '+ str(end))
-    st.write(df.describe())
 
+    with tab1:
+        st.subheader('Descriptive data of '+str(user_input))
+        st.table(df.describe())
+    
     #Visualization
-    st.subheader('Closing Price vs Time Chart of '+str(user_input))
-    fig = plt.figure(figsize = (12,6))
-    plt.plot(df.Close)
-    st.pyplot(fig)
-
-    if total_days >= 100:
-        st.subheader('Closing Price vs Time Chart with 100 MA of '+str(user_input))
-        ma100 = df.Close.rolling(100).mean()
+    with tab2:
+    
+        st.subheader('Closing Price vs Time Chart of '+str(user_input))
         fig = plt.figure(figsize = (12,6))
-        plt.plot(df.Close, label = 'Closing')
-        plt.plot(ma100, c='r', label = 'MA100')
-        plt.legend()
+        plt.plot(df.Close)
         st.pyplot(fig)
-
+    with tab3:
+        if total_days >= 100:
+            st.subheader('Closing Price vs Time Chart with 100 MA of '+str(user_input))
+            ma100 = df.Close.rolling(100).mean()
+            fig = plt.figure(figsize = (12,6))
+            plt.plot(df.Close, label = 'Closing')
+            plt.plot(ma100, c='r', label = 'MA100')
+            plt.legend()
+            st.pyplot(fig)
+        else:
+            st.error('Insuffucient data')
+    with tab4:
         if total_days >= 200:
             st.subheader('Closing Price vs Time Chart with 100 MA & 200 MA of '+str(user_input))
             ma100 = df.Close.rolling(100).mean()
@@ -55,7 +70,9 @@ if end <= dt.date.today():
             plt.plot(ma200, c='g', label = 'MA200')
             plt.legend()
             st.pyplot(fig)
-
+        else:
+            st.error('Insuffucient data')
+    with tab5:
         if total_days > 148:
             #ML Part
             # Splitting into training and testing data
@@ -103,6 +120,9 @@ if end <= dt.date.today():
             plt.ylabel('Price')
             plt.legend()
             st.pyplot(fig)
+        else:
+            st.error('Insuffucient data')
+
 
 elif end > dt.date.today():
     st.write('Cannot see the future price')

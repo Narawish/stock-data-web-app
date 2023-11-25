@@ -29,3 +29,4 @@ Fixing method => pip install --upgrade streamlit
 ## Self learning
 1. Adding dynamic date range using streamlit date picker (st.date_input())
 2. Adding dynamics chart showing depending on the number of total days
+3. Adding tabs into the webpage for easier view
